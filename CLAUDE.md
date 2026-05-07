@@ -162,9 +162,22 @@ Inputs: `bg-[#1a1a1a]` with `border-[#27272a]`, focus ring `#7c3aed`. White text
   - Dashboard — **left sidebar nav** (Dashboard / Calendar / Posts / Business + Pro tip card + Logout) replaces the gradient top bar, dark stat cards with purple icon tiles, dark calendar cards with subtle hover-glow border, mobile top bar fallback for small screens
   - Brand + dark palette docs added to CLAUDE.md ("Brand & Theme" section) so future sessions stay consistent
   - Note: the npm package `name` in [package.json](package.json) is still `local-content-ai` — left unchanged to avoid forcing a `package-lock.json` regeneration; rename when convenient
+- **Session 13 — Deployment + legal pages (complete):**
+  - **Live on Vercel:** https://captionly01.vercel.app — frontend deployed, auto-redeploys on push to `main`
+  - **Google OAuth working in production** — Supabase redirect URLs include the live origin's `/auth/callback`
+  - **Terms of Service + Privacy Policy pages** added at [client/src/pages/Terms.tsx](client/src/pages/Terms.tsx) and [client/src/pages/Privacy.tsx](client/src/pages/Privacy.tsx). Routes mounted at `/terms` and `/privacy` in [App.tsx](client/src/App.tsx). Linked from the Signup checkbox and from the Landing footer. Effective date: May 7, 2026.
+  - **SPA routing fixed on Vercel** — deep links like `/terms`, `/privacy`, `/dashboard`, and `/auth/callback` were 404'ing on the live site because Vercel was serving them as filesystem paths. Two changes made it work:
+    - [client/vercel.json](client/vercel.json) — `{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }`. **Critical:** the file must live at `client/vercel.json`, **not** the repo root. The Vercel project has Root Directory set to `client`, and Vercel reads `vercel.json` from the Root Directory only — a repo-root copy is silently ignored.
+    - [client/public/_redirects](client/public/_redirects) — `/* /index.html 200`. Netlify-style fallback. Currently dead weight on Vercel (ignored), but harmless. Leave it in case of a future host migration.
+  - **README.md** added at the repo root with the full project pitch, tech stack, getting-started, env-var tables, and LinkedIn + GitHub badges in the Author section.
 
 **Next tasks:**
-1. Push to GitHub
-2. Email newsletter generator (turn the "Emails Drafted" Coming soon card into a real feature)
-3. Post scheduling (turn the "Posts Scheduled" Coming soon card into a real feature — IG/FB API + cron)
-4. Deploy to Vercel
+1. **Deploy backend to Railway** so content generation works on the live site (currently the live UI throws "failed to fetch" because Express only runs locally)
+2. End-to-end smoke test on the live site once the backend is up — signup → Google OAuth → onboarding → generate posts → generate Google bio
+3. Record demo video for portfolio
+4. Portfolio presentation prep
+5. Email newsletter generator (turn the "Emails Drafted" Coming soon card into a real feature)
+6. Post scheduling (turn the "Posts Scheduled" Coming soon card into a real feature — IG/FB API + cron)
+
+**Known issues:**
+- **Content generation fails on the live site** with "failed to fetch" — the Express backend is still local-only. Fix lands when the server is deployed (Railway is the planned target). The frontend's API base URL will need to point at the Railway origin via a `VITE_API_URL` env var (or equivalent) once the backend is up.
