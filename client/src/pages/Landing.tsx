@@ -188,7 +188,15 @@ export default function Landing() {
       <footer className="border-t border-[#27272a] bg-[#0a0a0a]">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-8 text-sm">
           <Wordmark />
-          <p className="text-zinc-500">© {new Date().getFullYear()} Captionly. All rights reserved.</p>
+          <div className="flex items-center gap-5">
+            <Link to="/terms" className="text-zinc-400 hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/privacy" className="text-zinc-400 hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <p className="text-zinc-500">© {new Date().getFullYear()} Captionly. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
