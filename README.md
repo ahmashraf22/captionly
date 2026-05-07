@@ -128,8 +128,8 @@ Coming soon.
 
 Built by **Ahmed Ashraf**.
 
-- LinkedIn: _coming soon_
-- GitHub: _coming soon_
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/ahamdy22)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ahmashraf22)
 
 ## License
 
