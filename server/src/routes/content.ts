@@ -47,6 +47,30 @@ const GENERATE_LIMIT = 20;
 const GENERATE_BIO_LIMIT = 10;
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 
+// Per-attempt hard cap on Gemini calls. The SDK has no built-in timeout, so
+// without this an unresponsive backend ties up an Express worker indefinitely.
+// On timeout the underlying request is abandoned (no abort signal in the
+// legacy SDK); it may eventually resolve, but the response is discarded.
+const GEMINI_TIMEOUT_MS = 30_000;
+
+class GeminiTimeoutError extends Error {
+  constructor() {
+    super('Gemini call timed out.');
+    this.name = 'GeminiTimeoutError';
+  }
+}
+
+/** Wraps a promise so it rejects with GeminiTimeoutError if it doesn't settle within `ms`. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new GeminiTimeoutError()), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Clamps each field of the business row to its per-field cap before injecting into a Gemini prompt. */
@@ -76,6 +100,9 @@ function isTransientGeminiError(err: unknown): boolean {
 
 /**
  * Calls Gemini with up to 3 attempts, backing off on transient errors (5xx / 429).
+ * Each attempt is capped by `GEMINI_TIMEOUT_MS`. Timeouts are NOT retried — a
+ * stuck request usually means the next one is stuck too, and the caller gets a
+ * faster error this way.
  * Throws the last error on final failure.
  */
 async function generateWithRetry(request: Parameters<ReturnType<typeof getGeminiModel>['generateContent']>[0]) {
@@ -83,9 +110,10 @@ async function generateWithRetry(request: Parameters<ReturnType<typeof getGemini
   let lastErr: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      return await getGeminiModel().generateContent(request);
+      return await withTimeout(getGeminiModel().generateContent(request), GEMINI_TIMEOUT_MS);
     } catch (err) {
       lastErr = err;
+      if (err instanceof GeminiTimeoutError) throw err;
       if (!isTransientGeminiError(err) || attempt === 2) throw err;
       await sleep(delays[attempt]);
     }
@@ -274,6 +302,9 @@ contentRouter.post('/generate', async (req: Request, res: Response) => {
     rawText = result.response.text();
   } catch (err) {
     console.error('[content/generate] Gemini call failed:', err);
+    if (err instanceof GeminiTimeoutError) {
+      return res.status(504).json({ error: 'Generation took too long — please try again.' });
+    }
     if (isTransientGeminiError(err)) {
       return res.status(503).json({ error: 'Gemini is busy right now — please try again in a moment.' });
     }
@@ -372,6 +403,9 @@ contentRouter.post('/generate-bio', async (req: Request, res: Response) => {
     bio = result.response.text().trim();
   } catch (err) {
     console.error('[content/generate-bio] Gemini call failed:', err);
+    if (err instanceof GeminiTimeoutError) {
+      return res.status(504).json({ error: 'Bio generation took too long — please try again.' });
+    }
     if (isTransientGeminiError(err)) {
       return res.status(503).json({ error: 'Gemini is busy right now — please try again in a moment.' });
     }
