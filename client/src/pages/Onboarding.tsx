@@ -29,6 +29,12 @@ interface FormErrors {
 
 const BUSINESS_TYPES: BusinessType[] = ['Salon', 'Gym', 'Restaurant', 'Dentist', 'Cafe', 'Retail Store', 'Other'];
 
+// Aligned with the server-side PROMPT_FIELD_CAPS in server/src/routes/content.ts.
+const NAME_MAX = 120;
+const CITY_MAX = 100;
+const AUDIENCE_MAX = 200;
+const DESCRIPTION_MAX = 1000;
+
 const TONE_OPTIONS: { value: BrandTone; emoji: string; description: string }[] = [
   { value: 'Friendly',      emoji: '😊', description: 'Warm, casual, like a neighborhood favorite' },
   { value: 'Professional',  emoji: '💼', description: 'Polished, trustworthy, expert tone' },
@@ -157,6 +163,7 @@ export default function Onboarding() {
               type="text"
               placeholder="e.g. Glow Beauty Studio"
               value={form.name}
+              maxLength={NAME_MAX}
               onChange={e => handleChange('name', e.target.value)}
               className={inputClass('name')}
             />
@@ -190,6 +197,7 @@ export default function Onboarding() {
                 type="text"
                 placeholder="e.g. Austin"
                 value={form.city}
+                maxLength={CITY_MAX}
                 onChange={e => handleChange('city', e.target.value)}
                 className={inputClass('city')}
               />
@@ -202,6 +210,7 @@ export default function Onboarding() {
               type="text"
               placeholder="e.g. young professionals aged 25–35"
               value={form.audience}
+              maxLength={AUDIENCE_MAX}
               onChange={e => handleChange('audience', e.target.value)}
               className={inputClass('audience')}
             />
@@ -259,9 +268,13 @@ export default function Onboarding() {
               rows={3}
               placeholder="Briefly describe what your business does and what makes it special…"
               value={form.description}
+              maxLength={DESCRIPTION_MAX}
               onChange={e => handleChange('description', e.target.value)}
               className={inputClass('description')}
             />
+            <p className="mt-1 text-xs text-zinc-500 text-right tabular-nums">
+              {form.description.length}/{DESCRIPTION_MAX}
+            </p>
           </Field>
 
           {/* Server error */}

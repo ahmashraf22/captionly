@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
+// Surface a missing prod env var loudly instead of silently shipping a build
+// that points at localhost — the symptom otherwise is "failed to fetch" once
+// the user clicks Generate, with no clue why.
+if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+  throw new Error(
+    'VITE_API_URL is not set in this production build. Configure it in the deploy environment and rebuild.',
+  );
+}
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
 interface Business {

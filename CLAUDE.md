@@ -53,8 +53,9 @@ npm start            # run compiled dist/index.js
 
 ### Lib files (already created)
 - `client/src/lib/supabase.ts` — Supabase browser client (uses `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`)
-- `server/src/lib/supabase.ts` — Supabase server client (uses `SUPABASE_URL` / `SUPABASE_ANON_KEY`)
-- `server/src/lib/gemini.ts` — Gemini API client (uses `GEMINI_API_KEY`, model: `gemini-1.5-flash`)
+- `server/src/lib/gemini.ts` — Gemini API client (uses `GEMINI_API_KEY`, model: `gemini-2.5-flash`)
+- `server/src/lib/rate-limit.ts` — in-memory per-user rate limiter used by the content routes
+- Server-side Supabase clients are created **per-request** inside `server/src/routes/content.ts` so they can carry the caller's JWT (required for RLS). There is intentionally no shared server-side Supabase singleton.
 
 ### Auth
 `client/src/context/AuthContext.tsx` wraps the app in `main.tsx` and exposes the Supabase session via `useAuth()` with `login`, `signup`, `signInWithGoogle`, and `logout` actions.

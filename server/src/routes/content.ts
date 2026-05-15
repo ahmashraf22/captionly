@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import ws from 'ws';
 import { getGeminiModel } from '../lib/gemini';
+import { checkRateLimit } from '../lib/rate-limit';
 
 export const contentRouter = Router();
 
@@ -27,6 +28,40 @@ interface BusinessRow {
 
 const IDEAS_MAX_LENGTH = 300;
 const GOOGLE_BIO_MAX_LENGTH = 750;
+
+// Per-field caps applied at prompt-build time. Defensive — the client also
+// caps these on the Onboarding form — but a row created via direct Supabase
+// access could exceed them.
+const PROMPT_FIELD_CAPS = {
+  name: 120,
+  type: 60,
+  city: 100,
+  country: 80,
+  audience: 200,
+  tone: 60,
+  description: 1000,
+} as const;
+
+// Rate limits for Gemini-backed endpoints. Per-user, 1-hour window.
+const GENERATE_LIMIT = 20;
+const GENERATE_BIO_LIMIT = 10;
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Clamps each field of the business row to its per-field cap before injecting into a Gemini prompt. */
+function sanitizeBusiness(b: BusinessRow): BusinessRow {
+  return {
+    ...b,
+    name: (b.name || '').slice(0, PROMPT_FIELD_CAPS.name),
+    type: (b.type || '').slice(0, PROMPT_FIELD_CAPS.type),
+    city: (b.city || '').slice(0, PROMPT_FIELD_CAPS.city),
+    country: (b.country || '').slice(0, PROMPT_FIELD_CAPS.country),
+    audience: (b.audience || '').slice(0, PROMPT_FIELD_CAPS.audience),
+    tone: (b.tone || '').slice(0, PROMPT_FIELD_CAPS.tone),
+    description: (b.description || '').slice(0, PROMPT_FIELD_CAPS.description),
+  };
+}
 
 /** Sleep for `ms` milliseconds. */
 function sleep(ms: number): Promise<void> {
@@ -175,8 +210,8 @@ contentRouter.post('/generate', async (req: Request, res: Response) => {
   const accessToken = authHeader.slice('Bearer '.length);
 
   const { business_id, ideas: rawIdeas } = (req.body ?? {}) as { business_id?: string; ideas?: unknown };
-  if (!business_id) {
-    return res.status(400).json({ error: 'business_id is required.' });
+  if (!business_id || !UUID_RE.test(business_id)) {
+    return res.status(400).json({ error: 'business_id is required and must be a UUID.' });
   }
 
   let ideas: string | undefined;
@@ -205,6 +240,16 @@ contentRouter.post('/generate', async (req: Request, res: Response) => {
   }
   const userId = userData.user.id;
 
+  // Per-user rate limit. Applied after auth so anonymous traffic doesn't
+  // poison buckets keyed by user id.
+  const rate = checkRateLimit(`gen:${userId}`, GENERATE_LIMIT, RATE_WINDOW_MS);
+  if (rate) {
+    res.setHeader('Retry-After', String(rate.retryAfterSeconds));
+    return res.status(429).json({
+      error: `Too many generations — try again in ${rate.retryAfterSeconds}s.`,
+    });
+  }
+
   // Fetch the business — RLS ensures it must belong to this user.
   const { data: business, error: bizErr } = await supabase
     .from('businesses')
@@ -216,11 +261,14 @@ contentRouter.post('/generate', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Business not found.' });
   }
 
+  // Clamp each field so a long row can't blow up the Gemini token bill.
+  const safeBusiness = sanitizeBusiness(business as BusinessRow);
+
   // Ask Gemini for structured JSON output.
   let rawText: string;
   try {
     const result = await generateWithRetry({
-      contents: [{ role: 'user', parts: [{ text: buildPrompt(business as BusinessRow, ideas) }] }],
+      contents: [{ role: 'user', parts: [{ text: buildPrompt(safeBusiness, ideas) }] }],
       generationConfig: { responseMimeType: 'application/json' },
     });
     rawText = result.response.text();
@@ -280,8 +328,8 @@ contentRouter.post('/generate-bio', async (req: Request, res: Response) => {
   const accessToken = authHeader.slice('Bearer '.length);
 
   const { business_id } = (req.body ?? {}) as { business_id?: string };
-  if (!business_id) {
-    return res.status(400).json({ error: 'business_id is required.' });
+  if (!business_id || !UUID_RE.test(business_id)) {
+    return res.status(400).json({ error: 'business_id is required and must be a UUID.' });
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -292,6 +340,15 @@ contentRouter.post('/generate-bio', async (req: Request, res: Response) => {
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData.user) {
     return res.status(401).json({ error: 'Invalid or expired session.' });
+  }
+  const userId = userData.user.id;
+
+  const rate = checkRateLimit(`bio:${userId}`, GENERATE_BIO_LIMIT, RATE_WINDOW_MS);
+  if (rate) {
+    res.setHeader('Retry-After', String(rate.retryAfterSeconds));
+    return res.status(429).json({
+      error: `Too many bio generations — try again in ${rate.retryAfterSeconds}s.`,
+    });
   }
 
   const { data: business, error: bizErr } = await supabase
@@ -304,11 +361,13 @@ contentRouter.post('/generate-bio', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Business not found.' });
   }
 
+  const safeBusiness = sanitizeBusiness(business as BusinessRow);
+
   // Plain-text bio — no responseMimeType=json, just raw string.
   let bio: string;
   try {
     const result = await generateWithRetry({
-      contents: [{ role: 'user', parts: [{ text: buildBioPrompt(business as BusinessRow) }] }],
+      contents: [{ role: 'user', parts: [{ text: buildBioPrompt(safeBusiness) }] }],
     });
     bio = result.response.text().trim();
   } catch (err) {
