@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { COUNTRIES } from '../lib/countries';
@@ -140,10 +140,13 @@ export default function Onboarding() {
       <div className="relative w-full max-w-2xl animate-fade-up">
         {/* Header */}
         <div className="mb-8 text-center">
-          <span className="inline-flex items-baseline gap-1.5 text-white font-bold text-xl tracking-tight mb-4">
+          <Link
+            to="/"
+            className="inline-flex items-baseline gap-1.5 text-white font-bold text-xl tracking-tight mb-4 hover:opacity-80 transition-opacity"
+          >
             Captionly
             <span className="h-2 w-2 rounded-full bg-[#7c3aed] shadow-[0_0_10px_rgba(124,58,237,0.8)]" />
-          </span>
+          </Link>
           <h1 className="mt-3 text-3xl font-bold text-white tracking-tight">Set up your business</h1>
           <p className="mt-2 text-zinc-400 text-sm">Tell us about your business so we can generate content that fits.</p>
         </div>

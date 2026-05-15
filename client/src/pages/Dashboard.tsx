@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -302,16 +302,13 @@ export default function Dashboard() {
       {/* ===== Left sidebar ===== */}
       <aside className="hidden lg:flex w-64 flex-col border-r border-white/[0.07] bg-[#0a0a0a] sticky top-0 h-screen z-10">
         <div className="px-5 py-5 border-b border-white/[0.07]">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[9px] tracking-[0.24em] text-zinc-500 uppercase">
-              § 05
-            </span>
-            <span className="h-px w-4 bg-zinc-700" />
-            <span className="inline-flex items-baseline gap-1.5 text-white font-display text-[1.4rem] leading-none tracking-[-0.01em]">
-              Captionly
-              <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed] shadow-[0_0_10px_rgba(124,58,237,0.8)]" />
-            </span>
-          </div>
+          <Link
+            to="/"
+            className="inline-flex items-baseline gap-1.5 text-white font-display text-[1.4rem] leading-none tracking-[-0.01em] hover:opacity-80 transition-opacity"
+          >
+            Captionly
+            <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed] shadow-[0_0_10px_rgba(124,58,237,0.8)]" />
+          </Link>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -399,15 +396,13 @@ export default function Dashboard() {
       <div className="flex-1 min-w-0">
         {/* Mobile top bar */}
         <div className="lg:hidden flex items-center justify-between px-4 py-4 border-b border-white/[0.07] bg-[#0a0a0a]/85 backdrop-blur sticky top-0 z-10">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[9px] tracking-[0.24em] text-zinc-500 uppercase">
-              § 05
-            </span>
-            <span className="inline-flex items-baseline gap-1.5 text-white font-display text-xl leading-none">
-              Captionly
-              <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed]" />
-            </span>
-          </div>
+          <Link
+            to="/"
+            className="inline-flex items-baseline gap-1.5 text-white font-display text-xl leading-none hover:opacity-80 transition-opacity"
+          >
+            Captionly
+            <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed]" />
+          </Link>
           <button
             type="button"
             onClick={handleLogout}

@@ -135,14 +135,10 @@ export default function Signup() {
           />
 
           {/* Top */}
-          <div className="relative flex items-center gap-3">
-            <span className="font-mono text-[10px] tracking-[0.26em] text-zinc-500 uppercase">
-              § Issue 05 / 2026
-            </span>
-            <span className="h-px w-6 bg-zinc-700" />
+          <div className="relative flex items-center">
             <Link
               to="/"
-              className="inline-flex items-baseline gap-1.5 text-white font-display text-[1.6rem] leading-none tracking-[-0.01em]"
+              className="inline-flex items-baseline gap-1.5 text-white font-display text-[1.6rem] leading-none tracking-[-0.01em] hover:opacity-80 transition-opacity"
             >
               Captionly
               <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed] shadow-[0_0_12px_rgba(124,58,237,0.9)]" />
@@ -194,14 +190,10 @@ export default function Signup() {
         <main className="relative flex items-center justify-center px-6 py-12 sm:px-10 sm:py-16">
           <div className="w-full max-w-md animate-fade-up">
             {/* Mobile brand */}
-            <div className="lg:hidden mb-10 flex items-center gap-3">
-              <span className="font-mono text-[10px] tracking-[0.26em] text-zinc-500 uppercase">
-                § Issue 05
-              </span>
-              <span className="h-px w-6 bg-zinc-700" />
+            <div className="lg:hidden mb-10 flex items-center">
               <Link
                 to="/"
-                className="inline-flex items-baseline gap-1.5 text-white font-display text-[1.5rem] leading-none"
+                className="inline-flex items-baseline gap-1.5 text-white font-display text-[1.5rem] leading-none hover:opacity-80 transition-opacity"
               >
                 Captionly
                 <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed] shadow-[0_0_10px_rgba(124,58,237,0.8)]" />

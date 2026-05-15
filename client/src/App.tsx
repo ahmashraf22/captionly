@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
@@ -15,6 +15,17 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+
+/** Scrolls to top on every route change. React Router preserves scroll
+ *  position by default, which means navigating to /terms while at the bottom
+ *  of the landing page would land the user at the bottom of /terms. */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname]);
+  return null;
+}
 
 /** Centered dark loading spinner shown while a lazy route chunk is fetching. */
 function RouteFallback() {
@@ -36,6 +47,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Landing />} />

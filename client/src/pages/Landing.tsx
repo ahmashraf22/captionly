@@ -44,11 +44,7 @@ export default function Landing() {
         }`}
       >
         <nav className="max-w-[1400px] mx-auto flex items-center justify-between px-6 sm:px-10 py-5">
-          <Link to="/" className="flex items-center gap-3 sm:gap-4 group">
-            <span className="hidden sm:inline font-mono text-[10px] tracking-[0.24em] text-zinc-500 uppercase">
-              § Issue 05 / 2026
-            </span>
-            <span className="hidden sm:block h-px w-6 bg-zinc-700" />
+          <Link to="/" className="flex items-center group">
             <Wordmark />
           </Link>
           <div className="flex items-center gap-1 sm:gap-2">
@@ -476,7 +472,9 @@ export default function Landing() {
         <div className="max-w-[1400px] mx-auto px-6 sm:px-10 py-10">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <Wordmark />
+              <Link to="/" className="hover:opacity-80 transition-opacity">
+                <Wordmark />
+              </Link>
               <span className="hidden sm:block h-px w-8 bg-zinc-700" />
               <span className="font-mono text-[10px] tracking-[0.22em] text-zinc-500 uppercase">
                 Made for local · Built in 2026
