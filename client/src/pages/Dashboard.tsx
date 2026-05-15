@@ -296,14 +296,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white animate-fade-in flex relative">
-      {/* Film grain */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-[80] opacity-[0.04] mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>")`,
-        }}
-      />
+      {/* Editorial film grain — hidden on mobile and under reduced-motion via CSS */}
+      <div aria-hidden className="film-grain" />
 
       {/* ===== Left sidebar ===== */}
       <aside className="hidden lg:flex w-64 flex-col border-r border-white/[0.07] bg-[#0a0a0a] sticky top-0 h-screen z-10">

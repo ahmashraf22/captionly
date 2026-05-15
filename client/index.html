@@ -7,6 +7,24 @@
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="description" content="Captionly — the AI content platform for local businesses. Turn your brand into scroll-stopping social posts." />
     <title>Captionly — Make content that gets results</title>
+
+    <!-- Fonts: preconnect first (DNS + TLS), then the stylesheet. Loaded
+         async via `media="print"` + onload swap so it doesn't block first
+         paint — the body font has system fallbacks via CSS vars. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      />
+    </noscript>
   </head>
   <body class="bg-[#0a0a0a]">
     <div id="root"></div>
